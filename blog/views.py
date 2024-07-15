@@ -4,12 +4,12 @@ from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from .models import Post
-from .serializers import PostSerializer, UserSerializer
+from .serializers import PostSerializer, UserSerializer, PostDetailSerializer
 from django.contrib.auth.models import User
 
 # Create your views here.
 class PostListCreate(generics.ListCreateAPIView):
-  queryset = Post.objects.all()
+  queryset = Post.objects.all().select_related('author').prefetch_related('categories')
   serializer_class = PostSerializer
   permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
@@ -17,8 +17,8 @@ class PostListCreate(generics.ListCreateAPIView):
     serializer.save(author=self.request.user)
 
 class PostDetail(generics.RetrieveUpdateDestroyAPIView):
-  queryset = Post.objects.all()
-  serializer_class = PostSerializer
+  queryset = Post.objects.all().select_related('author').prefetch_related('comments', 'categories')
+  serializer_class = PostDetailSerializer
   permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 class UserCreate(generics.CreateAPIView):
