@@ -21,8 +21,8 @@ This is a RESTful API for a simple blogging platform built using Django and Djan
 1. **Clone the repository**:
 
     ```bash
-    git clone https://github.com/yourusername/blogging-platform-api.git
-    cd blogging-platform-api
+    git clone https://github.com/paulyeager0212/valueglance_blog.git
+    cd valueglance_blog
     ```
 
 2. **Create and activate a virtual environment**:
