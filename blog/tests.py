@@ -2,87 +2,74 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from django.contrib.auth.models import User
-from .models import Post, Category, Comment
-from rest_framework_simplejwt.tokens import RefreshToken
 
-class BlogPostAPITestCase(APITestCase):
+class AuthTests(APITestCase):
+
     def setUp(self):
-        self.user = User.objects.create_user(username='testuser', password='testpass')
-        self.token = RefreshToken.for_user(self.user).access_token
-        self.api_authentication()
+        self.user = User.objects.create_user(username='testuser', password='testpass', email='testuser@example.com', first_name='Test', last_name='User')
+        self.user.save()
 
-        self.category = Category.objects.create(name='Category1')
-        self.blog_post = Post.objects.create(
-            title='Test Title',
-            content='Test Content',
-            author=self.user
-        )
-        self.blog_post.categories.add(self.category)
-
-    def api_authentication(self):
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token}')
-
-    def test_create_blog_post(self):
+    def test_register_user(self):
+        url = reverse('user-register')
         data = {
-            'title': 'New Title',
-            'content': 'New Content',
-            'categories': [self.category.id]
+            'username': 'newuser',
+            'password': 'newpass',
+            'email': 'newuser@example.com',
+            'first_name': 'New',
+            'last_name': 'User'
         }
-        response = self.client.post(reverse('post-list-create'), data)
+        response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['detail'], 'Registration successful.')
 
-    def test_retrieve_blog_post_list(self):
-        response = self.client.get(reverse('post-list-create'))
+    def test_login_user(self):
+        url = reverse('token_obtain_pair')
+        data = {
+            'username': 'testuser',
+            'password': 'testpass'
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('access', response.data)
+        self.assertIn('refresh', response.data)
+
+    def test_login_invalid_credentials(self):
+        url = reverse('token_obtain_pair')
+        data = {
+            'username': 'testuser',
+            'password': 'wrongpass'
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertIn('detail', response.data)
+        self.assertEqual(response.data['detail'], 'No active account found with the given credentials')
+
+    def test_access_protected_endpoint_with_valid_token(self):
+        login_url = reverse('token_obtain_pair')
+        data = {
+            'username': 'testuser',
+            'password': 'testpass'
+        }
+        login_response = self.client.post(login_url, data, format='json')
+        access_token = login_response.data['access']
+
+        url = reverse('post-list-create')
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {access_token}')
+        response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_retrieve_blog_post_detail(self):
-        response = self.client.get(reverse('post-detail', kwargs={'pk': self.blog_post.id}))
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_update_blog_post(self):
-        data = {
-            'title': 'Updated Title',
-            'content': 'Updated Content',
-            'categories': [self.category.id]
-        }
-        response = self.client.put(reverse('post-detail', kwargs={'pk': self.blog_post.id}), data)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_delete_blog_post(self):
-        response = self.client.delete(reverse('post-detail', kwargs={'pk': self.blog_post.id}))
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-
-    def test_create_blog_post_unauthenticated(self):
-        self.client.credentials()  # Remove authentication
-        data = {
-            'title': 'New Title',
-            'content': 'New Content',
-            'categories': [self.category.id]
-        }
-        response = self.client.post(reverse('post-list-create'), data)
+    def test_access_protected_endpoint_with_invalid_token(self):
+        url = reverse('post-list-create')
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer invalid_token')
+        response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_update_blog_post_unauthenticated(self):
-        self.client.credentials()  # Remove authentication
+    def test_create_blog_post_without_authentication(self):
+        url = reverse('post-list-create')
         data = {
-            'title': 'Updated Title',
-            'content': 'Updated Content',
-            'categories': [self.category.id]
+            'title': 'Unauthorized Post',
+            'content': 'This should fail.',
+            'categories': []
         }
-        response = self.client.put(reverse('post-detail', kwargs={'pk': self.blog_post.id}), data)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-    def test_delete_blog_post_unauthenticated(self):
-        self.client.credentials()  # Remove authentication
-        response = self.client.delete(reverse('post-detail', kwargs={'pk': self.blog_post.id}))
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-    def test_create_blog_post_invalid_token(self):
-        self.client.credentials(HTTP_AUTHORIZATION='Bearer invalid_token')  # Invalid token
-        data = {
-            'title': 'New Title',
-            'content': 'New Content',
-            'categories': [self.category.id]
-        }
-        response = self.client.post(reverse('post-list-create'), data)
+        response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

@@ -87,8 +87,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'defaultdb',
         'USER': 'avnadmin',
-        'PASSWORD': 'AVNS_rV-chy5cNHPfwwhEh0V',
-        'HOST': 'pg-343bc9eb-paul.g.aivencloud.com',
+        'PASSWORD': 'AVNS_GvZnVKnfbVKRBV3jk8A',
+        'HOST': 'pg-84a2793-paul.i.aivencloud.com',
         'PORT': '15703',
     }
 }

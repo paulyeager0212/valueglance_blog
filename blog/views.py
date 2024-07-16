@@ -1,9 +1,9 @@
 from django.shortcuts import render
-from rest_framework import generics, permissions
-from rest_framework.permissions import AllowAny
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework import status, generics, permissions
 from rest_framework.response import Response
-from .models import Post
+from rest_framework.views import APIView
+from rest_framework.permissions import  IsAuthenticated
+from .models import Post, Category
 from .serializers import PostSerializer, UserSerializer, PostDetailSerializer
 from django.contrib.auth.models import User
 
@@ -11,7 +11,7 @@ from django.contrib.auth.models import User
 class PostListCreate(generics.ListCreateAPIView):
   queryset = Post.objects.all().select_related('author').prefetch_related('categories')
   serializer_class = PostSerializer
-  permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+  permission_classes = [IsAuthenticated]
 
   def perform_create(self, serializer):
     serializer.save(author=self.request.user)
@@ -19,19 +19,15 @@ class PostListCreate(generics.ListCreateAPIView):
 class PostDetail(generics.RetrieveUpdateDestroyAPIView):
   queryset = Post.objects.all().select_related('author').prefetch_related('comments', 'categories')
   serializer_class = PostDetailSerializer
-  permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+  permission_classes = [IsAuthenticated]
 
 class UserCreate(generics.CreateAPIView):
   queryset = User.objects.all()
-  permission_classes = [AllowAny]
   serializer_class = UserSerializer
 
   def post(self, request, *args, **kwargs):
-    serializer = self.get_serializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    user = serializer.save()
-    refresh = RefreshToken.for_user(user)
-    return Response({
-        'refresh': str(refresh),
-        'access': str(refresh.access_token),
-    })
+    serializer = UserSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({"detail": "Registration successful."}, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
