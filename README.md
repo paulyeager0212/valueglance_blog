@@ -14,7 +14,7 @@ This is a RESTful API for a simple blogging platform built using Django and Djan
 - Django
 - Django REST framework
 - Django REST framework SimpleJWT
-- PostgreSQL (or another database of your choice)
+- PostgreSQL
 
 ## Installation
 
@@ -25,30 +25,17 @@ This is a RESTful API for a simple blogging platform built using Django and Djan
     cd valueglance_blog
     ```
 
-2. **Create and activate a virtual environment**:
-
+2. **Build and Start Docker Containers:**:
     ```bash
-    python -m venv .venv
-    source .venv/bin/activate  # On Windows use `.venv\Scripts\activate`
+    docker-compose up --build
     ```
 
-3. **Install the dependencies**:
+3. **Create a superuser**:
 
     ```bash
-    pip install -r requirements.txt
+    docker-compose run --rm app sh -c "python manage.py createsuperuser"
     ```
 
-4. **Create a superuser**:
-
-    ```bash
-    python manage.py createsuperuser
-    ```
-
-5. **Run the development server**:
-
-    ```bash
-    python manage.py runserver
-    ```
 
 ## API Endpoints
 
@@ -77,4 +64,4 @@ This is a RESTful API for a simple blogging platform built using Django and Djan
 Run the unit tests to ensure the API is working correctly:
 
 ```bash
-python manage.py test
+docker-compose run --rm app sh -c "python manage.py test"
