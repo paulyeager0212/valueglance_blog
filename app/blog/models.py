@@ -20,15 +20,3 @@ class Post(models.Model):
   def __str__(self):
       return self.title
 
-class Comment(models.Model):
-  body = models.TextField()
-  author = models.ForeignKey(User, related_name='comments', on_delete=models.CASCADE)
-  post = models.ForeignKey(Post, related_name='comments', on_delete=models.CASCADE)
-  publish_date = models.DateTimeField(auto_now_add=True)
-
-  class Meta:
-     ordering = ['publish_date']
-
-  def __str__(self):
-     return f'Comment {self.body} by {self.author}'
-

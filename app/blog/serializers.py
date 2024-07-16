@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Post, Comment, Category
+from .models import Post, Category
 from django.contrib.auth.models import User
 
 class AuthorSerializer(serializers.ModelSerializer):
@@ -18,17 +18,6 @@ class CategorySerializer(serializers.ModelSerializer):
     model = Category
     fields = ['id', 'name']
 
-class CommentSerializer(serializers.ModelSerializer):
-    """
-    Serializer to represent the Comment model.
-    Includes the author's username as a read-only field.
-    """
-    author_username = serializers.ReadOnlyField(source='author.username')
-
-    class Meta:
-        model = Comment
-        fields = ['id', 'content', 'author', 'author_username', 'created_at']
-
 
 class PostSerializer(serializers.ModelSerializer):
   author = AuthorSerializer(read_only=True)
@@ -40,14 +29,13 @@ class PostSerializer(serializers.ModelSerializer):
 class PostDetailSerializer(serializers.ModelSerializer):
   """
   Detailed serializer for the Post model.
-  Includes nested comments, author, and categories serializers.
+  Includes nested author, and categories serializers.
   """
   author = AuthorSerializer(read_only=True)
   categories = CategorySerializer(many=True, read_only=True)
-  comments = CommentSerializer(many=True, read_only=True)
   class Meta:
     model = Post
-    fields = ['id', 'title', 'content', 'author', 'categories', 'publish_date', 'last_modified', 'comments']
+    fields = ['id', 'title', 'content', 'author', 'categories', 'publish_date', 'last_modified']
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
