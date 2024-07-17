@@ -65,3 +65,58 @@ Run the unit tests to ensure the API is working correctly:
 
 ```bash
 docker-compose run --rm app sh -c "python manage.py test"
+```
+
+## Design Decisions and Trade-offs
+
+### Use of Docker
+
+**Decision**: Docker was chosen to ensure a consistent development environment across different machines and setups. It also simplifies the deployment process.
+
+**Trade-offs**:
+
+- **Pros**: Consistent environments, easy dependency management, and simplified deployment.
+- **Cons**: Initial setup complexity and potential performance overhead.
+
+### PostgreSQL
+
+**Decision**: PostgreSQL was chosen as the database for its robustness, scalability, and widespread use in production environments.
+
+**Trade-offs**:
+
+- **Pros**: Reliable, ACID-compliant, and supports advanced SQL features.
+- **Cons**: Slightly more complex setup compared to lightweight databases like SQLite.
+
+### Django Rest Framework (DRF)
+
+**Decision**: DRF was used to build the RESTful API for its powerful and flexible toolkit.
+
+**Trade-offs**:
+
+- **Pros**: Simplifies API development, robust authentication and permission systems.
+- **Cons**: Additional learning curve for developers not familiar with DRF.
+
+### JWT for Authentication
+
+**Decision**: JWT was chosen for stateless, secure, and scalable authentication.
+
+**Trade-offs**:
+
+- **Pros**: Stateless authentication, easy to scale.
+- **Cons**: Requires secure handling of tokens and potential vulnerability to token theft.
+
+## Additional Features and Improvements
+
+Given more time, the following features and improvements could be implemented:
+
+- **Pagination**: Implementing pagination to handle large lists of blog posts efficiently.
+
+- **Search and Filtering**: Adding search and filtering capabilities to allow users to search for and filter blog posts based on various criteria.
+
+- **Comments System**: Integrating a comment system for each blog post to enhance user interaction.
+
+- **Like/Dislike Feature**: Implementing a like/dislike feature for blog posts to provide user feedback mechanisms.
+
+- **Enhanced Security**: Implementing additional security measures such as rate limiting, IP whitelisting/blacklisting, and two-factor authentication (2FA).
+
+
