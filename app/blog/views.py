@@ -17,7 +17,7 @@ class PostListCreate(generics.ListCreateAPIView):
     serializer.save(author=self.request.user)
 
 class PostDetail(generics.RetrieveUpdateDestroyAPIView):
-  queryset = Post.objects.all().select_related('author').prefetch_related('comments', 'categories')
+  queryset = Post.objects.all().select_related('author').prefetch_related('categories')
   serializer_class = PostDetailSerializer
   permission_classes = [IsAuthenticated]
 
